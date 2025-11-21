@@ -1,0 +1,7 @@
+{
+  "name": "ProConnect",
+  "description": "On-demand expert consultation platform connecting individuals and enterprises with professionals for per-minute advice.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
