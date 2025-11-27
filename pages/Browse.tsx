@@ -81,11 +81,15 @@ export const BrowsePage: React.FC<BrowseProps> = ({ setPage, setSelectedProfile 
 
   return (
     <PageWrapper>
-      <div className="min-h-screen bg-zinc-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-zinc-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Subtle Background Glows */}
+        <div className="fixed top-20 left-10 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="fixed bottom-20 right-10 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           
           {/* Header Section */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 animate-slideUp">
              <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
                    Find Your Expert
@@ -97,17 +101,17 @@ export const BrowsePage: React.FC<BrowseProps> = ({ setPage, setSelectedProfile 
           </div>
 
           {/* Search Toggle */}
-          <div className="flex justify-center mb-8">
-             <div className="bg-zinc-800 p-1 rounded-lg inline-flex border border-zinc-700">
+          <div className="flex justify-center mb-8 animate-slideUp animation-delay-200">
+             <div className="bg-zinc-900/80 backdrop-blur p-1 rounded-xl inline-flex border border-zinc-800">
                 <button 
                     onClick={() => { setIsAiMode(false); setAiMatches([]); }}
-                    className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${!isAiMode ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${!isAiMode ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}
                 >
                     <Search size={16} className="inline mr-2 -mt-0.5" /> Keyword Search
                 </button>
                 <button 
                     onClick={() => { setIsAiMode(true); setSearchTerm(''); }}
-                    className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${isAiMode ? 'bg-gradient-to-r from-amber-700 to-amber-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${isAiMode ? 'bg-gradient-to-r from-amber-700 to-amber-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}
                 >
                     <Sparkles size={16} className="inline mr-2 -mt-0.5" /> AI Matchmaker
                 </button>
@@ -115,15 +119,15 @@ export const BrowsePage: React.FC<BrowseProps> = ({ setPage, setSelectedProfile 
           </div>
 
           {/* Search Bars */}
-          <div className="max-w-3xl mx-auto mb-12">
+          <div className="max-w-3xl mx-auto mb-16 animate-slideUp animation-delay-400">
              {isAiMode ? (
-                 <div className="animate-fadeIn bg-zinc-800/50 border border-amber-500/30 p-6 rounded-2xl backdrop-blur-sm">
+                 <div className="animate-fadeIn bg-zinc-900/60 border border-amber-500/30 p-6 rounded-2xl backdrop-blur-md shadow-2xl">
                     <form onSubmit={handleAiSearch} className="relative">
                         <textarea 
                             value={aiQuery}
                             onChange={(e) => setAiQuery(e.target.value)}
                             placeholder="Describe your problem... (e.g., 'I need a lawyer for a Series A term sheet review' or 'I need to optimize my AWS RDS costs')"
-                            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-4 pr-12 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent h-32 resize-none"
+                            className="w-full bg-black/50 border border-zinc-700 rounded-xl p-4 pr-12 text-white placeholder-zinc-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent h-32 resize-none transition-all"
                         />
                         <div className="absolute bottom-3 right-3">
                              <Button 
@@ -148,17 +152,17 @@ export const BrowsePage: React.FC<BrowseProps> = ({ setPage, setSelectedProfile 
                  </div>
              ) : (
                 <div className="relative animate-fadeIn">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-500" />
+                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-zinc-500" />
                     <input 
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search by name, company, or skill..."
-                        className="w-full bg-zinc-800 border border-zinc-700 rounded-full py-4 pl-12 pr-4 text-lg text-white focus:ring-2 focus:ring-red-500 focus:outline-none placeholder-zinc-500 shadow-lg"
+                        className="w-full bg-zinc-900/80 border border-zinc-700 rounded-full py-5 pl-14 pr-14 text-lg text-white focus:ring-2 focus:ring-red-500 focus:outline-none placeholder-zinc-600 shadow-xl backdrop-blur-sm transition-all"
                     />
                     {searchTerm && (
-                        <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-white">
-                            <X size={20} />
+                        <button onClick={() => setSearchTerm('')} className="absolute right-5 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-white bg-zinc-800 rounded-full p-1">
+                            <X size={16} />
                         </button>
                     )}
                 </div>
@@ -171,10 +175,11 @@ export const BrowsePage: React.FC<BrowseProps> = ({ setPage, setSelectedProfile 
           ) : (
             <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {displayedExperts.map(expert => (
+                    {displayedExperts.map((expert, index) => (
                         <ExpertCard 
                             key={expert.id} 
                             expert={expert} 
+                            delay={index * 100} // Staggered delay
                             onSelect={() => { setSelectedProfile(expert); setPage('profile'); }} 
                             matchReason={isAiMode ? "Recommended based on your query." : undefined}
                         />

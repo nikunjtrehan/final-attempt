@@ -21,6 +21,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ setPage, initialMode = 'logi
   const [error, setError] = useState('');
   const [verificationSent, setVerificationSent] = useState(false);
 
+  // Password Strength Logic
+  const getPasswordStrength = (pass: string) => {
+    let score = 0;
+    if (pass.length === 0) return 0;
+    if (pass.length >= 6) score++;
+    if (pass.length >= 8 && /\d/.test(pass)) score++;
+    if (pass.length >= 10 && /[!@#$%^&*(),.?":{}|<>]/.test(pass)) score++;
+    return score;
+  };
+
+  const strengthScore = getPasswordStrength(password);
+
+  const getStrengthConfig = (score: number) => {
+    switch (score) {
+        case 1: return { label: 'Weak', color: 'bg-red-500', text: 'text-red-500' };
+        case 2: return { label: 'Medium', color: 'bg-amber-500', text: 'text-amber-500' };
+        case 3: return { label: 'Strong', color: 'bg-green-500', text: 'text-green-500' };
+        default: return { label: 'Too short', color: 'bg-zinc-700', text: 'text-zinc-500' };
+    }
+  };
+
+  const strengthConfig = getStrengthConfig(strengthScore);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -28,6 +51,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ setPage, initialMode = 'logi
 
     try {
       if (mode === 'signup') {
+        if (strengthScore === 0) {
+            throw new Error("Password is too short (min 6 chars).");
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -65,6 +92,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ setPage, initialMode = 'logi
       if (err.code === 'auth/email-already-in-use') msg = "Email already in use.";
       if (err.code === 'auth/wrong-password') msg = "Incorrect password.";
       if (err.code === 'auth/user-not-found') msg = "No account found with this email.";
+      if (err.message) msg = err.message;
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -127,18 +155,44 @@ export const AuthPage: React.FC<AuthPageProps> = ({ setPage, initialMode = 'logi
                 onChange={e => setEmail(e.target.value)} 
                 required 
               />
-              <Input 
-                id="password" 
-                type="password" 
-                label="Password" 
-                placeholder="••••••••" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                required 
-              />
+              <div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  label="Password" 
+                  placeholder="••••••••" 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  required 
+                />
+                
+                {/* Password Strength Indicator */}
+                {mode === 'signup' && password.length > 0 && (
+                    <div className="mt-3 animate-fadeIn">
+                        <div className="flex space-x-1.5 h-1.5 mb-1.5">
+                            {[1, 2, 3].map((level) => (
+                                <div 
+                                    key={level} 
+                                    className={`flex-1 rounded-full transition-all duration-300 ${
+                                        level <= strengthScore ? strengthConfig.color : 'bg-zinc-800'
+                                    }`} 
+                                />
+                            ))}
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs text-zinc-500">
+                                {strengthScore < 3 && "Use 10+ chars, numbers & symbols"}
+                            </span>
+                            <span className={`text-xs font-bold transition-colors duration-300 ${strengthConfig.text}`}>
+                                {strengthConfig.label}
+                            </span>
+                        </div>
+                    </div>
+                )}
+              </div>
 
               {error && (
-                <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
+                <div className="flex items-center p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-red-300 text-sm animate-slideUpFade">
                     <AlertCircle size={16} className="mr-2 flex-shrink-0" />
                     {error}
                 </div>
@@ -153,7 +207,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ setPage, initialMode = 'logi
               <p className="text-sm text-zinc-400">
                 {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
                 <button 
-                    onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
+                    onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setPassword(''); }}
                     className="font-medium text-red-400 hover:text-red-300 transition-colors"
                 >
                     {mode === 'login' ? 'Sign up' : 'Log in'}

@@ -3,8 +3,7 @@ import { Expert } from '../types';
 
 // Initialize Gemini
 // The API key must be obtained exclusively from the environment variable process.env.API_KEY.
-// Use import.meta.env for Vite, and ensure the variable starts with VITE_
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const matchExpertsWithAI = async (query: string, experts: Expert[]): Promise<{
   matchedExpertIds: string[];

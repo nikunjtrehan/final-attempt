@@ -26,9 +26,13 @@
               sans: ['Inter', 'sans-serif'],
             },
             animation: {
-              'fadeIn': 'fadeIn 0.5s ease-in-out',
-              'slideUp': 'slideUp 0.5s ease-out',
-              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'fadeIn': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slideUp': 'slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slideUpFade': 'slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'blob': 'blob 10s infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'shimmer': 'shimmer 2.5s linear infinite',
             },
             keyframes: {
               fadeIn: {
@@ -36,8 +40,26 @@
                 '100%': { opacity: '1' },
               },
               slideUp: {
+                '0%': { transform: 'translateY(40px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              slideUpFade: {
                 '0%': { transform: 'translateY(20px)', opacity: '0' },
                 '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              blob: {
+                "0%": { transform: "translate(0px, 0px) scale(1)" },
+                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                "100%": { transform: "translate(0px, 0px) scale(1)" },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              shimmer: {
+                '0%': { backgroundPosition: '-1000px 0' },
+                '100%': { backgroundPosition: '1000px 0' }
               }
             }
           },
@@ -46,12 +68,19 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-      body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #e7e5e4; }
+      body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #e7e5e4; overflow-x: hidden; }
       /* Custom scrollbar */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: #18181b; }
       ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
       ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+      
+      .animation-delay-200 { animation-delay: 200ms; }
+      .animation-delay-400 { animation-delay: 400ms; }
+      .animation-delay-600 { animation-delay: 600ms; }
+      .animation-delay-1000 { animation-delay: 1000ms; }
+      .animation-delay-2000 { animation-delay: 2000ms; }
+      .animation-delay-4000 { animation-delay: 4000ms; }
     </style>
   <script type="importmap">
 {
