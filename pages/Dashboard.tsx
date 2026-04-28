@@ -92,7 +92,7 @@ function CalendarWidget() {
 }
 
 // ─── Currency Converter Widget ──────────────────────────────────────────
-const CURRENCY_KEY = 'cac3e106404767f10e43c911fa7c1d16';
+// Using frankfurter.app — free, HTTPS, no API key required
 const CURRENCIES = ['USD','EUR','GBP','INR','JPY','CAD','AUD','CNY','CHF','SGD'];
 
 function CurrencyWidget() {
@@ -103,24 +103,25 @@ function CurrencyWidget() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const convert = () => {
+  const fetchRate = (fromCur: string, toCur: string) => {
+    if (fromCur === toCur) { setRate(1); return; }
     setLoading(true);
     setError('');
-    fetch(`http://apilayer.net/api/live?access_key=${CURRENCY_KEY}&currencies=${to}&source=${from}&format=1`)
+    fetch(`https://api.frankfurter.app/latest?from=${fromCur}&to=${toCur}`)
       .then(r => r.json())
       .then(data => {
-        if (data.success && data.quotes) {
-          const key = `${from}${to}`;
-          setRate(data.quotes[key] || null);
+        if (data.rates && data.rates[toCur] !== undefined) {
+          setRate(data.rates[toCur]);
         } else {
-          setError(data.error?.info || 'Conversion failed');
+          setError('Rate unavailable for this pair');
         }
       })
-      .catch(() => setError('Network error'))
+      .catch(() => setError('Network error — please try again'))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { convert(); }, [from, to]);
+  useEffect(() => { fetchRate(from, to); }, [from, to]);
+
 
   return (
     <div className="border border-white/10 bg-white/[0.03] backdrop-blur-xl rounded-2xl p-6 shadow-xl">
