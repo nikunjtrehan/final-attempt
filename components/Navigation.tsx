@@ -2,6 +2,7 @@ import React from 'react';
 import { Zap, User, Menu, X } from 'lucide-react';
 import { Button } from './UI';
 import { PageView, UserProfile } from '../types';
+import { GooeyText } from './GooeyText';
 
 interface NavbarProps {
   setPage: (page: PageView) => void;
@@ -29,7 +30,13 @@ export const Navbar: React.FC<NavbarProps> = ({ setPage, currentUser, onLogout, 
             <div className="bg-red-600/10 p-2 rounded-lg group-hover:bg-red-600/20 transition-colors">
                 <Zap className="h-6 w-6 text-red-500" />
             </div>
-            <span className="ml-2 text-xl font-bold text-white tracking-tight">ProConnect</span>
+            <GooeyText 
+              texts={["ProConnect", "Experts", "Network"]} 
+              morphTime={1.2} 
+              cooldownTime={3}
+              className="w-[120px] h-[30px] ml-2" 
+              textClassName="text-xl font-bold text-white tracking-tight" 
+            />
           </div>
 
           {/* Desktop Nav */}
@@ -37,6 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setPage, currentUser, onLogout, 
             <div className="flex space-x-4">
               <a onClick={() => setPage('home')} className={navLinkClass('home')}>Home</a>
               <a onClick={() => setPage('browse')} className={navLinkClass('browse')}>Browse Experts</a>
+              {currentUser && <a onClick={() => setPage('dashboard')} className={navLinkClass('dashboard')}>Dashboard</a>}
             </div>
             
             <div className="flex items-center space-x-4 pl-4 border-l border-zinc-800">
@@ -59,8 +67,8 @@ export const Navbar: React.FC<NavbarProps> = ({ setPage, currentUser, onLogout, 
                 </>
               ) : (
                 <>
-                  <Button variant="outline" className="px-4 py-2 text-xs" onClick={() => setPage('login')}>Log In</Button>
-                  <Button variant="primary" className="px-4 py-2 text-xs" onClick={() => setPage('signup')}>Sign Up</Button>
+                  <Button variant="outline" className="px-4 py-2 text-xs" onClick={() => setPage('login')}>Sign In</Button>
+                  <Button variant="primary" className="px-4 py-2 text-xs" onClick={() => setPage('signup')}>Get Started</Button>
                 </>
               )}
             </div>
@@ -86,13 +94,14 @@ export const Navbar: React.FC<NavbarProps> = ({ setPage, currentUser, onLogout, 
             <a onClick={() => { setPage('browse'); setIsMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-800">Browse Experts</a>
             {currentUser ? (
                <>
+                <a onClick={() => { setPage('dashboard'); setIsMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-800">Dashboard</a>
                 <a onClick={() => { setPage('my-profile'); setIsMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-800">My Profile</a>
                 <a onClick={() => { onLogout(); setIsMobileMenuOpen(false); }} className="block px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-zinc-800">Log Out</a>
                </>
             ) : (
               <div className="grid grid-cols-2 gap-2 mt-4 px-3">
-                 <Button variant="outline" onClick={() => { setPage('login'); setIsMobileMenuOpen(false); }}>Log In</Button>
-                 <Button variant="primary" onClick={() => { setPage('signup'); setIsMobileMenuOpen(false); }}>Sign Up</Button>
+                 <Button variant="outline" onClick={() => { setPage('login'); setIsMobileMenuOpen(false); }}>Sign In</Button>
+                 <Button variant="primary" onClick={() => { setPage('signup'); setIsMobileMenuOpen(false); }}>Get Started</Button>
               </div>
             )}
           </div>

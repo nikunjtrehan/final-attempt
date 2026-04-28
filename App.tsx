@@ -9,6 +9,7 @@ import { BrowsePage } from './pages/Browse';
 import { ProfilePage } from './pages/Profile';
 import { AuthPage } from './pages/Auth';
 import { MyProfilePage } from './pages/MyProfile';
+import { DashboardPage } from './pages/Dashboard';
 import { PageView, Expert, UserProfile } from './types';
 import { Loader2 } from 'lucide-react';
 
@@ -20,52 +21,68 @@ export default function App() {
 
   useEffect(() => {
     let unsubscribeDoc: () => void;
+    let unsubscribeAuth: () => void;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        
-        // Check if user doc exists, if not create it (covers legacy users or failed signups)
-        try {
-            const docSnap = await getDoc(userRef);
-            if (!docSnap.exists()) {
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || 'User',
-                    photoURL: user.photoURL || '',
-                    bio: '',
-                    phoneNumber: '',
-                    createdAt: serverTimestamp()
-                });
-            }
-        } catch (e) {
-            console.error("Error checking user doc:", e);
-        }
-
-        // Listen to real-time updates from Firestore
-        unsubscribeDoc = onSnapshot(userRef, (doc) => {
-            const data = doc.data();
-            // Merge auth data with firestore data
-            setCurrentUser({
-                uid: user.uid,
-                email: user.email,
-                emailVerified: user.emailVerified,
-                displayName: data?.displayName || user.displayName,
-                photoURL: data?.photoURL || user.photoURL,
-                bio: data?.bio,
-                phoneNumber: data?.phoneNumber
-            });
-        });
-      } else {
-        setCurrentUser(null);
-        if (unsubscribeDoc) unsubscribeDoc();
-      }
+    // Timeout fallback: if Firebase auth doesn't respond within 5s, proceed anyway
+    const authTimeout = setTimeout(() => {
+      console.warn("Firebase auth timeout - proceeding without auth");
       setIsAuthReady(true);
-    });
+    }, 5000);
+
+    try {
+      if (!auth) {
+        throw new Error("Firebase auth not initialized");
+      }
+      
+      unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+        clearTimeout(authTimeout);
+        if (user) {
+          const userRef = doc(db, "users", user.uid);
+          
+          try {
+              const docSnap = await getDoc(userRef);
+              if (!docSnap.exists()) {
+                  await setDoc(userRef, {
+                      uid: user.uid,
+                      email: user.email,
+                      displayName: user.displayName || 'User',
+                      photoURL: user.photoURL || '',
+                      bio: '',
+                      phoneNumber: '',
+                      createdAt: serverTimestamp()
+                  });
+              }
+          } catch (e) {
+              console.error("Error checking user doc:", e);
+          }
+
+          unsubscribeDoc = onSnapshot(userRef, (doc) => {
+              const data = doc.data();
+              setCurrentUser({
+                  uid: user.uid,
+                  email: user.email,
+                  emailVerified: user.emailVerified,
+                  displayName: data?.displayName || user.displayName,
+                  photoURL: data?.photoURL || user.photoURL,
+                  bio: data?.bio,
+                  phoneNumber: data?.phoneNumber
+              });
+          });
+        } else {
+          setCurrentUser(null);
+          if (unsubscribeDoc) unsubscribeDoc();
+        }
+        setIsAuthReady(true);
+      });
+    } catch (e) {
+      console.error("Firebase auth setup failed:", e);
+      clearTimeout(authTimeout);
+      setIsAuthReady(true);
+    }
 
     return () => {
-        unsubscribeAuth();
+        clearTimeout(authTimeout);
+        if (unsubscribeAuth) unsubscribeAuth();
         if (unsubscribeDoc) unsubscribeDoc();
     };
   }, []);
@@ -78,7 +95,7 @@ export default function App() {
 
   // Auth Guard
   useEffect(() => {
-    if (isAuthReady && !currentUser && (page === 'my-profile')) {
+    if (isAuthReady && !currentUser && (page === 'my-profile' || page === 'dashboard')) {
         handleSetPage('login');
     }
   }, [page, currentUser, isAuthReady]);
@@ -92,6 +109,8 @@ export default function App() {
     );
   }
 
+  const isAuthPage = page === 'login' || page === 'signup';
+
   const renderPage = () => {
     switch (page) {
       case 'home':
@@ -101,12 +120,15 @@ export default function App() {
       case 'profile':
         return <ProfilePage profile={selectedProfile} setPage={handleSetPage} />;
       case 'login':
-        return <AuthPage setPage={handleSetPage} initialMode="login" />;
+        return <AuthPage key="login" setPage={handleSetPage} initialMode="login" />;
       case 'signup':
-        return <AuthPage setPage={handleSetPage} initialMode="signup" />;
+        return <AuthPage key="signup" setPage={handleSetPage} initialMode="signup" />;
       case 'my-profile':
-        if (!currentUser) return <AuthPage setPage={handleSetPage} initialMode="login" />;
+        if (!currentUser) return <AuthPage key="login-guard" setPage={handleSetPage} initialMode="login" />;
         return <MyProfilePage user={currentUser} setPage={handleSetPage} />;
+      case 'dashboard':
+        if (!currentUser) return <AuthPage key="login-guard" setPage={handleSetPage} initialMode="login" />;
+        return <DashboardPage user={currentUser} setPage={handleSetPage} />;
       default:
         return <HomePage setPage={handleSetPage} />;
     }
@@ -114,26 +136,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-red-500/30">
-      <Navbar 
-        setPage={handleSetPage} 
-        currentUser={currentUser} 
-        onLogout={() => auth.signOut()} 
-        currentPage={page}
-      />
+      {!isAuthPage && (
+        <Navbar 
+          setPage={handleSetPage} 
+          currentUser={currentUser} 
+          onLogout={() => auth.signOut()} 
+          currentPage={page}
+        />
+      )}
       <main>{renderPage()}</main>
-      
-      <footer className="bg-zinc-950 border-t border-zinc-900 py-12 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-2xl font-bold text-white mb-4 tracking-tighter">ProConnect</p>
-            <div className="flex justify-center space-x-6 mb-8 text-zinc-500 text-sm">
-                <a href="#" className="hover:text-white">Terms</a>
-                <a href="#" className="hover:text-white">Privacy</a>
-                <a href="#" className="hover:text-white">Enterprise</a>
-                <a href="#" className="hover:text-white">Support</a>
-            </div>
-            <p className="text-zinc-600 text-sm">© {new Date().getFullYear()} ProConnect Inc. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

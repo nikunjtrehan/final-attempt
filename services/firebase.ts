@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -29,8 +29,14 @@ try {
   
 } catch (error) {
   console.error("Firebase Initialization Error:", error);
-  // We allow the app to crash or degrade gracefully if keys are invalid in this demo env
+  // Create a dummy app so auth/db are never undefined
+  if (!app!) {
+    app = initializeApp(firebaseConfig, 'fallback');
+    auth = getAuth(app);
+    db = getFirestore(app);
+  }
 }
 
 export { auth, db, app };
+export const googleProvider = new GoogleAuthProvider();
 export const appId = "website-d1f45";

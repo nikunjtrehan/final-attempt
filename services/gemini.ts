@@ -1,9 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Expert } from '../types';
 
-// Initialize Gemini
-// The API key must be obtained exclusively from the environment variable process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize Gemini lazily to avoid crashing on module load if API key is missing
+let ai: GoogleGenAI | null = null;
+function getAI(): GoogleGenAI | null {
+  if (!ai && process.env.API_KEY) {
+    try {
+      ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    } catch (e) {
+      console.warn("Gemini AI init failed:", e);
+    }
+  }
+  return ai;
+}
 
 export const matchExpertsWithAI = async (query: string, experts: Expert[]): Promise<{
   matchedExpertIds: string[];
@@ -40,7 +49,12 @@ export const matchExpertsWithAI = async (query: string, experts: Expert[]): Prom
       Return JSON only.
     `;
 
-    const response = await ai.models.generateContent({
+    const gemini = getAI();
+    if (!gemini) {
+      return { matchedExpertIds: [], reasoning: "AI matching unavailable (no API key). Please try manual search." };
+    }
+
+    const response = await gemini.models.generateContent({
       model: model,
       contents: prompt,
       config: {

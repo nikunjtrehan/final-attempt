@@ -24,7 +24,7 @@ export interface UserProfile {
   phoneNumber?: string;
 }
 
-export type PageView = 'home' | 'browse' | 'profile' | 'login' | 'signup' | 'verify-email' | 'my-profile';
+export type PageView = 'home' | 'browse' | 'profile' | 'login' | 'signup' | 'verify-email' | 'my-profile' | 'dashboard';
 
 export interface AuthState {
   user: UserProfile | null;
